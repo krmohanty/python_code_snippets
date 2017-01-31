@@ -1,0 +1,62 @@
+#convert to numeric
+
+d1['zip']=pd.to_numeric(d1['zip'],errors='coerce').fillna(0).astype(int)
+
+#convert to str
+
+X['MONTH_AC_DT']=X['MONTH_AC_DT'].apply(lambda x:str(x))
+
+
+#left merge/join
+
+d3=d2.merge(p1,left_on='primary_heading',right_on='element_name',how='left')
+
+
+#list categorical variables
+
+categorical_variables = list(X.dtypes[X.dtypes == "object"].index)
+
+#looping over columns
+
+for x in list(dnb_data.dtypes[dnb_data.dtypes == "object"].index):
+    d4[x].fillna('UNK',inplace=True)
+	
+#reading csv file if there is utf-8 errors
+X = pd.read_csv("H:\\Lead_Scoring_Model\\data_collection\\py_wd\\lead_modeling_dataset_jan2016.csv",encoding="ISO-8859-1")
+
+#find out if any column has missing values
+
+for x in list(X.dtypes.index):
+    if any(X[x].isnull()):
+        print(x)
+		
+		
+		
+#converting pandas df categorical variables to dummy variables
+for variable in categorical_variables:
+    dummies=pd.get_dummies(X[variable],prefix=variable)
+    X = pd.concat([X, dummies],axis=1)
+    X.drop([variable],axis=1,inplace=True)
+	
+	
+#aggregate example 1
+
+d1[d1.channel_type.isin(['YPR'])].groupby(['channel_type','C_Campaign_Name1','device'],as_index=False).agg({'C_SFDCLeadID':pd.Series.nunique}).sort_values(['channel_type','C_SFDCLeadID'],ascending=[False,False])
+
+
+# convert string to numeric
+d1['C_Zip_Postal_temp']=pd.to_numeric(d1['C_Zip_Postal'],errors='coerce').fillna(0).astype(int)
+
+#remove non numeric characters
+
+d3['C_BusPhone'].replace(regex=True,inplace=True,to_replace=r'\D',value=r'')
+
+#Filtering a complementary set of columns
+
+col_delete=list(d1_original.dtypes.index)
+
+col_delete.remove('C_BusPhone')
+col_delete.remove('C_Zip_Postal')
+col_delete.remove('C_Business_Category_11')
+
+d1=d1.loc[:, ~d1.columns.isin(col_delete)]
